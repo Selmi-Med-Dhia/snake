@@ -135,12 +135,12 @@ public class ScrollSelector extends JPanel implements MouseWheelListener{
         }else{
             regul = 1;
         }
-        if (e.getPreciseWheelRotation() == -1 && !busy && selectedIndex >0){
+        if (e.getPreciseWheelRotation() < 0 && !busy && selectedIndex >0){
             steps = 0;
             Timer timer = new Timer(20,x -> moveUp(x, regul));
             busy = true;
             timer.start();
-        }else if (e.getPreciseWheelRotation() == 1 && !busy && selectedIndex < options.size()-1){
+        }else if (e.getPreciseWheelRotation() >0 && !busy && selectedIndex < options.size()-1){
             steps = 0;
             Timer timer = new Timer(20,x -> moveDown(x, regul));
             busy = true;
