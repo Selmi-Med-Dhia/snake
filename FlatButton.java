@@ -4,7 +4,6 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JButton;
-import javax.swing.border.Border;
 
 public class FlatButton extends JButton{
     public FlatButton(){
@@ -15,18 +14,24 @@ public class FlatButton extends JButton{
         this.setFocusPainted(false);
         this.setContentAreaFilled(false);
         this.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
+        this.setFocusable(false);
     }
+    FlatButton ref = this;
     @Override
     public void setModel(ButtonModel newModel){
         super.setModel(new DefaultButtonModel(){
 
             @Override
             public void setPressed(boolean p){
-                System.out.println("tepressit");
+                int offset = 3;
+                if(p){
+                    ref.setLocation(ref.getX() + offset, ref.getY() + offset);
+                }else{
+                    ref.setLocation(ref.getX() - offset, ref.getY() - offset);
+                }
             }
             @Override
             public void setArmed(boolean p){
-                System.out.println("t'armit");
             }
 
         });
