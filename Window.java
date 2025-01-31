@@ -1,11 +1,14 @@
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -17,16 +20,19 @@ public class Window {
     int sideLength = 20;
     int rows = (gameHeight -70)/sideLength;
     int cols = (gameWidth - 15)/sideLength;
-    int headIX, headIY;
+    int headIX, headIY, delay;
     ArrayList<SnakeBlock> snake;
     int welcomeWidth=500, welcomeHeight=350;
     JFrame frame = null;
     JPanel mainPanel, gamePanel;
-    JLabel titleLabel, hitEnterLabel, scoreLabel;
+    JLayeredPane layeredPane;
+    JLabel titleLabel, hitEnterLabel, scoreLabel, countLabel;
     ScrollSelector difficulties;
     FlatButton playButton, backButton, retryButton;
-    int state, offset = 3;;
+    int state, offset = 3;
+    int timerSteps;
     boolean playButtonPressed = false, playButtonClicked = false;
+    Timer snakeTimer = null, countDownTimer = null;
     final int WELCOME_SCREEN = 0;
     final int GAME_SCREEN = 1;
     final int GAME_OVER_SCREEN = 2;
@@ -147,6 +153,12 @@ public class Window {
         if (frame != null){
             frame.dispose();
         }
+        if (snakeTimer != null && snakeTimer.isRunning()){
+            snakeTimer.stop();
+        }
+        if (countDownTimer != null && countDownTimer.isRunning()){
+            countDownTimer.stop();
+        }
         frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(false);
@@ -225,7 +237,7 @@ public class Window {
         gamePanel.setBackground(new Color(0,0,0,0));
         gamePanel.setBorder(BorderFactory.createLineBorder(new Color(255, 255, 255), 1 ));
         gamePanel.setSize(new Dimension(gameWidth - 15 , gameHeight - scoreLabel.getHeight() + scoreLabel.getY() - 50));
-        gamePanel.setLocation(5, scoreLabel.getHeight() + scoreLabel.getY());
+        gamePanel.setLocation(0, 0);
         gamePanel.setLayout(null);
 
         snake = new ArrayList<SnakeBlock>();
@@ -284,11 +296,82 @@ public class Window {
             
         });
 
-        mainPanel.add(gamePanel);
+        countLabel = new JLabel("3");
+        countLabel.setSize(300, 300);
+        countLabel.setFont(new Font("Courier New", Font.BOLD, 20));
+        countLabel.setLocation( (gamePanel.getWidth() - countLabel.getWidth())/2, (gamePanel.getHeight() - countLabel.getHeight())/2 );
+        countLabel.setForeground(new Color(255,255,255));
+        countLabel.setHorizontalAlignment(JLabel.CENTER);
+        countLabel.setVerticalAlignment(JLabel.CENTER);
+        
+        layeredPane = new JLayeredPane();
+        layeredPane.setSize(new Dimension(gameWidth - 15 , gameHeight - scoreLabel.getHeight() + scoreLabel.getY() - 50));
+        layeredPane.setLocation(5, scoreLabel.getHeight() + scoreLabel.getY());
+
+        timerSteps = 0;
+        countDownTimer = new Timer(50, x -> countDown(x));
+
+        delay = 50 - 10*difficulties.getSelectedIndex();
+
+        snakeTimer = new Timer(delay, x -> snakeForward(x));
+
+        layeredPane.add(gamePanel, Integer.valueOf(1));
+        layeredPane.add(countLabel, Integer.valueOf(2));
+
+        mainPanel.add(layeredPane);
         mainPanel.add(retryButton);
         mainPanel.add(scoreLabel);
         mainPanel.add(backButton);
         frame.setContentPane(mainPanel);
         frame.setVisible(true);
+        countDownTimer.start();
+    }
+    public void countDown(ActionEvent e){
+        timerSteps++;
+
+        countLabel.setFont(new Font("Courier New", Font.BOLD, 20 + (timerSteps % 20)*15 ));
+        countLabel.setForeground(new Color(255,255,255, 255 - (timerSteps % 20)*12));
+
+        if (timerSteps ==20){
+            countLabel.setFont(new Font("Courier New", Font.BOLD, 20));
+            countLabel.setForeground(new Color(255,255,255));
+            countLabel.setText("2");
+        }else if (timerSteps ==40){
+            countLabel.setFont(new Font("Courier New", Font.BOLD, 20));
+            countLabel.setForeground(new Color(255,255,255));
+            countLabel.setText("1");
+        }else if (timerSteps == 60){
+            ((Timer)(e.getSource())).stop();
+            countLabel.setVisible(false);
+            snakeTimer.start();
+        }
+    }
+    public void snakeForward(ActionEvent e){
+        if (!checkCollision()){
+            snake.get(0).advance();
+            headIX += snake.get(0).getDirX();
+            headIY += snake.get(0).getDirY();
+            for(int i=1; i<snake.size(); i++){
+                snake.get(i).advance();
+                frame.revalidate();
+                frame.repaint();
+            }
+            for(int i=snake.size()-1; i>0; i--){
+                snake.get(i).setDirX(snake.get(i-1).getDirX());
+                snake.get(i).setDirY(snake.get(i-1).getDirY());
+            }
+        }else{
+            snakeTimer.stop();
+        }
+    }
+    public boolean checkCollision(){
+        int futurHeadIX = snake.get(0).getDirX() + headIX ;
+        int futurHeadIY = snake.get(0).getDirY() + headIY ;
+        if (futurHeadIX == -1 || futurHeadIX == cols){
+            return(true);
+        }else if (futurHeadIY == -1 || futurHeadIY == rows){
+            return(true);
+        }
+        return(false);
     }
 }
