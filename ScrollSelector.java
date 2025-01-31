@@ -19,6 +19,9 @@ public class ScrollSelector extends JPanel implements MouseWheelListener{
     int steps, maxSteps = 8;
     boolean busy = false;
     float pixelStep, fontStep = 15.0f/maxSteps, opacityStep = 127.0f/maxSteps;
+    public int getSelectedIndex(){
+        return selectedIndex;
+    }
     public ScrollSelector(ArrayList<String> options, Dimension dimension){
         this.setSize(dimension);
         this.options = options;
