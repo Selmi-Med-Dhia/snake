@@ -20,15 +20,8 @@ public class FlatButton extends JButton{
     @Override
     public void setModel(ButtonModel newModel){
         super.setModel(new DefaultButtonModel(){
-
             @Override
             public void setPressed(boolean p){
-                int offset = 3;
-                if(p){
-                    ref.setLocation(ref.getX() + offset, ref.getY() + offset);
-                }else{
-                    ref.setLocation(ref.getX() - offset, ref.getY() - offset);
-                }
             }
             @Override
             public void setArmed(boolean p){
