@@ -5,6 +5,8 @@ import javax.swing.ButtonModel;
 import javax.swing.DefaultButtonModel;
 import javax.swing.JButton;
 
+import java.awt.Cursor;
+
 public class FlatButton extends JButton{
     public FlatButton(){
         super();
@@ -15,6 +17,7 @@ public class FlatButton extends JButton{
         this.setContentAreaFilled(false);
         this.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
         this.setFocusable(false);
+        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
     FlatButton ref = this;
     @Override

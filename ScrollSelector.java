@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -28,6 +29,7 @@ public class ScrollSelector extends JPanel implements MouseWheelListener{
         selectedIndex = (options.size()-1)/2;
         this.setLayout(null);
         this.setBackground(new Color(255,255,255, 0));
+        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
         if (selectedIndex >0){
             label1 = new JLabel(options.get(selectedIndex -1));
             label1.setForeground(new Color(255,255,255,127));
