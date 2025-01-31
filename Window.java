@@ -14,6 +14,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Window {
     int gameWidth=515, gameHeight=870;
@@ -22,6 +23,7 @@ public class Window {
     int cols = (gameWidth - 15)/sideLength;
     int headIX, headIY, delay;
     ArrayList<SnakeBlock> snake;
+    ArrayList<WallBlock> blocks;
     int welcomeWidth=500, welcomeHeight=350;
     JFrame frame = null;
     JPanel mainPanel, gamePanel;
@@ -31,7 +33,7 @@ public class Window {
     FlatButton playButton, backButton, retryButton;
     int state, offset = 3;
     int timerSteps;
-    boolean playButtonPressed = false, playButtonClicked = false;
+    boolean playButtonPressed = false, playButtonClicked = false, turnLock = false;
     Timer snakeTimer = null, countDownTimer = null;
     final int WELCOME_SCREEN = 0;
     final int GAME_SCREEN = 1;
@@ -241,11 +243,12 @@ public class Window {
         gamePanel.setLayout(null);
 
         snake = new ArrayList<SnakeBlock>();
-        snake.add(new SnakeBlock(sideLength, 0, -1));
-        snake.add(new SnakeBlock(sideLength, 0, -1));
-        snake.add(new SnakeBlock(sideLength, 0, -1));
         headIY = rows/2;
         headIX = cols/2;
+        snake.add(new SnakeBlock(sideLength, 0, -1, headIX, headIY));
+        snake.add(new SnakeBlock(sideLength, 0, -1, headIX, headIY+1));
+        snake.add(new SnakeBlock(sideLength, 0, -1, headIX, headIY+2));
+        
         snake.get(0).setLocation(headIX * sideLength, headIY * sideLength);
         snake.get(1).setLocation(headIX * sideLength, (headIY+1) * sideLength);
         snake.get(2).setLocation(headIX * sideLength, (headIY+2) * sideLength);
@@ -253,6 +256,12 @@ public class Window {
         for(SnakeBlock block : snake){
             gamePanel.add(block);
         }
+        blocks = new ArrayList<WallBlock>();
+        generateBlocks();
+        for(WallBlock block : blocks){
+            gamePanel.add(block);
+        }
+
         frame.addKeyListener(new KeyListener() {
 
             @Override
@@ -262,27 +271,31 @@ public class Window {
             public void keyPressed(KeyEvent e) {
                 if(e.getKeyCode() == 37){
                     //left
-                    if (snake.get(0).getDirX() != 1){
+                    if (snake.get(0).getDirX() != 1 && !turnLock){
                         snake.get(0).setDirX(-1);
                         snake.get(0).setDirY(0);
+                        turnLock = true;
                     }
                 }else if (e.getKeyCode() == 38){
                     //up
-                    if (snake.get(0).getDirY() != 1){
+                    if (snake.get(0).getDirY() != 1 && !turnLock){
                         snake.get(0).setDirX(0);
                         snake.get(0).setDirY(-1);
+                        turnLock = true;
                     }
                 }else if(e.getKeyCode() == 39){
                     //right
-                    if (snake.get(0).getDirX() != -1){
+                    if (snake.get(0).getDirX() != -1 && !turnLock){
                         snake.get(0).setDirX(1);
                         snake.get(0).setDirY(0);
+                        turnLock = true;
                     }
                 }else if (e.getKeyCode() == 40){
                     //down
-                    if (snake.get(0).getDirY() != -1){
+                    if (snake.get(0).getDirY() != -1 && !turnLock){
                         snake.get(0).setDirX(0);
                         snake.get(0).setDirY(1);
+                        turnLock = true;
                     }
                 }else if(e.getKeyCode() == 8){
                     welcomeScreen();
@@ -311,7 +324,7 @@ public class Window {
         timerSteps = 0;
         countDownTimer = new Timer(50, x -> countDown(x));
 
-        delay = 50 - 10*difficulties.getSelectedIndex();
+        delay = 80 - 28*difficulties.getSelectedIndex();
 
         snakeTimer = new Timer(delay, x -> snakeForward(x));
 
@@ -363,6 +376,7 @@ public class Window {
         }else{
             snakeTimer.stop();
         }
+        turnLock = false;
     }
     public boolean checkCollision(){
         int futurHeadIX = snake.get(0).getDirX() + headIX ;
@@ -372,6 +386,67 @@ public class Window {
         }else if (futurHeadIY == -1 || futurHeadIY == rows){
             return(true);
         }
+        for(WallBlock block: blocks){
+            if ( (futurHeadIX == block.indexX) && (futurHeadIY == block.indexY) ){
+                return(true);
+            }
+        }
+        for(SnakeBlock block : snake){
+            if ( (futurHeadIX == block.indexX) && (futurHeadIY == block.indexY)){
+                return(true);
+            }
+        }
         return(false);
+    }
+    public void generateBlocks(){
+        Random rand = new Random();
+        int x = rand.nextInt(cols-10)+5;
+        int y = rand.nextInt(rows/5)+1;
+        drawShape(x, y, rand.nextInt(6));
+        if(difficulties.getSelectedIndex() > 0){
+            x = rand.nextInt(cols-10)+5;
+            y = rand.nextInt(rows/6) + ((rows*5)/6) -4;
+            drawShape(x, y, rand.nextInt(6));
+        }
+        if(difficulties.getSelectedIndex() >1){
+            x = rand.nextInt(cols/4-1) +1;
+            y = rand.nextInt(rows-2)+1;
+            if (rand.nextInt(2) == 1){
+                x = rand.nextInt(cols/4-4)+ (cols/4)*3 -4;
+            }
+            drawShape(x, y, rand.nextInt(6));
+        }
+    }
+    public void drawShape(int x, int y, int shape){
+        int x1=0, x2=0, x3=0, y1=0, y2=0, y3=0;
+        if(shape == 0){ //vertical line
+            x1 = x; y1 = y+1;
+            x2 = x; y2 = y+2;
+            x3 = x; y3 = y+3;
+        }else if(shape == 1){ //horizontal line
+            x1 = x+1; y1 = y;
+            x2 = x+2; y2 = y;
+            x3 = x+3; y3 = y;
+        }else if(shape == 2){ //vertical S
+            x1 = x; y1 = y+1;
+            x2 = x+1; y2 = y+1;
+            x3 = x; y3 = y+2;
+        }else if(shape == 3){ //horizontal S
+            x1 = x+1; y1 = y;
+            x2 = x+1; y2 = y+1;
+            x3 = x+2; y3 = y+1;
+        }else if(shape == 4){ //vertical pyramid
+            x1 = x; y1 = y+1;
+            x2 = x+1; y2 = y+1;
+            x3 = x; y3 = y+2;
+        }else if(shape == 5){ //horizontal pyramid
+            x1 = x+1; y1 = y;
+            x2 = x+1; y2 = y+1;
+            x3 = x+2; y3 = y;
+        }
+        blocks.add(new WallBlock(sideLength, x, y));
+        blocks.add(new WallBlock(sideLength, x1, y1));
+        blocks.add(new WallBlock(sideLength, x2, y2));
+        blocks.add(new WallBlock(sideLength, x3, y3));
     }
 }
