@@ -12,6 +12,7 @@ public class SnakeBlock extends JLabel{
         this.setSize(new Dimension(side, side));
         this.setBackground(new Color(0, 180, 0));
         this.setBorder(BorderFactory.createLineBorder(new Color(15, 20, 20), 1));
+        this.setLocation(indexX * side, indexY * side);
         this.setOpaque(true);
         this.side = side;
         this.dirX = dirX;

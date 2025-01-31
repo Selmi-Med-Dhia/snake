@@ -24,6 +24,7 @@ public class Window {
     int headIX, headIY, delay;
     ArrayList<SnakeBlock> snake;
     ArrayList<WallBlock> blocks;
+    WallBlock apple;
     int welcomeWidth=500, welcomeHeight=350;
     JFrame frame = null;
     JPanel mainPanel, gamePanel;
@@ -35,6 +36,7 @@ public class Window {
     int timerSteps;
     boolean playButtonPressed = false, playButtonClicked = false, turnLock = false;
     Timer snakeTimer = null, countDownTimer = null;
+    Random rand = new Random();
     final int WELCOME_SCREEN = 0;
     final int GAME_SCREEN = 1;
     final int GAME_OVER_SCREEN = 2;
@@ -248,10 +250,6 @@ public class Window {
         snake.add(new SnakeBlock(sideLength, 0, -1, headIX, headIY));
         snake.add(new SnakeBlock(sideLength, 0, -1, headIX, headIY+1));
         snake.add(new SnakeBlock(sideLength, 0, -1, headIX, headIY+2));
-        
-        snake.get(0).setLocation(headIX * sideLength, headIY * sideLength);
-        snake.get(1).setLocation(headIX * sideLength, (headIY+1) * sideLength);
-        snake.get(2).setLocation(headIX * sideLength, (headIY+2) * sideLength);
 
         for(SnakeBlock block : snake){
             gamePanel.add(block);
@@ -262,6 +260,7 @@ public class Window {
             gamePanel.add(block);
         }
 
+        spawnApple();
         frame.addKeyListener(new KeyListener() {
 
             @Override
@@ -366,8 +365,6 @@ public class Window {
             headIY += snake.get(0).getDirY();
             for(int i=1; i<snake.size(); i++){
                 snake.get(i).advance();
-                frame.revalidate();
-                frame.repaint();
             }
             for(int i=snake.size()-1; i>0; i--){
                 snake.get(i).setDirX(snake.get(i-1).getDirX());
@@ -377,6 +374,16 @@ public class Window {
             snakeTimer.stop();
         }
         turnLock = false;
+        if ((headIX == apple.indexX) && (headIY == apple.indexY)){
+            apple.setVisible(false);
+            scoreLabel.setText( String.valueOf(Integer.valueOf(scoreLabel.getText()).intValue() + 1) );
+            SnakeBlock last = snake.get(snake.size() -1);
+            snake.add(new SnakeBlock(sideLength, last.getDirX(), last.getDirY(), last.indexX - last.getDirX(), last.indexY - last.getDirY() ));
+            gamePanel.add(snake.get(snake.size() -1));
+            spawnApple();
+        }
+        frame.revalidate();
+        frame.repaint();
     }
     public boolean checkCollision(){
         int futurHeadIX = snake.get(0).getDirX() + headIX ;
@@ -399,7 +406,6 @@ public class Window {
         return(false);
     }
     public void generateBlocks(){
-        Random rand = new Random();
         int x = rand.nextInt(cols-10)+5;
         int y = rand.nextInt(rows/5)+1;
         drawShape(x, y, rand.nextInt(6));
@@ -448,5 +454,25 @@ public class Window {
         blocks.add(new WallBlock(sideLength, x1, y1));
         blocks.add(new WallBlock(sideLength, x2, y2));
         blocks.add(new WallBlock(sideLength, x3, y3));
+    }
+    public int spawnApple(){
+        int x = rand.nextInt(cols);
+        int y = rand.nextInt(rows);
+        for(WallBlock block : blocks){
+            if ( (x == block.indexX) && (y == block.indexY) ){
+                spawnApple();
+                return (0);
+            }
+        }
+        for(SnakeBlock block : snake){
+            if ( (x == block.indexX) && (y == block.indexY) ){
+                spawnApple();
+                return (0);
+            }
+        }
+        apple = new WallBlock(sideLength, x, y);
+        apple.setBackground(new Color(255, 153, 51));
+        gamePanel.add(apple);
+        return(1);
     }
 }
