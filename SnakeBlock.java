@@ -8,6 +8,7 @@ public class SnakeBlock extends JLabel{
     int dirX, dirY;
     int indexX, indexY;
     int side;
+    int borderThickness;
     public SnakeBlock(int side, int dirX, int dirY, int indexX, int indexY){
         this.setSize(new Dimension(side, side));
         this.setBackground(new Color(0, 180, 0));
@@ -19,6 +20,7 @@ public class SnakeBlock extends JLabel{
         this.dirY = dirY;
         this.indexX = indexX;
         this.indexY = indexY;
+        this.borderThickness = 1;
     }
     public void advance(){
         this.setLocation(this.getX() + dirX*side, this.getY() + dirY*side);

@@ -33,9 +33,9 @@ public class Window {
     ScrollSelector difficulties;
     FlatButton playButton, backButton, retryButton;
     int state, offset = 3;
-    int timerSteps;
+    int timerSteps, deathTimerSteps;
     boolean playButtonPressed = false, playButtonClicked = false, turnLock = false;
-    Timer snakeTimer = null, countDownTimer = null;
+    Timer snakeTimer = null, countDownTimer = null, deathTimer = null;
     Random rand = new Random();
     final int WELCOME_SCREEN = 0;
     final int GAME_SCREEN = 1;
@@ -132,6 +132,8 @@ public class Window {
                 if(e.getKeyCode() == 10 && !playButtonPressed && !playButtonClicked){
                     playButtonPressed = true;
                     playButton.setLocation(playButton.getX() + offset, playButton.getY() + offset);
+                }else if (e.getKeyCode() == 27){
+                    System.exit(1);
                 }
             }
 
@@ -162,6 +164,9 @@ public class Window {
         }
         if (countDownTimer != null && countDownTimer.isRunning()){
             countDownTimer.stop();
+        }
+        if (deathTimer != null && deathTimer.isRunning()){
+            deathTimer.stop();
         }
         frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -300,6 +305,8 @@ public class Window {
                     welcomeScreen();
                 }else if (e.getKeyCode() == 82){
                     gameScreen();
+                }else if (e.getKeyCode() == 27){
+                    System.exit(1);
                 }
             }
             @Override
@@ -323,7 +330,7 @@ public class Window {
         timerSteps = 0;
         countDownTimer = new Timer(50, x -> countDown(x));
 
-        delay = 80 - 28*difficulties.getSelectedIndex();
+        delay = 70 - 20*difficulties.getSelectedIndex();
 
         snakeTimer = new Timer(delay, x -> snakeForward(x));
 
@@ -372,6 +379,7 @@ public class Window {
             }
         }else{
             snakeTimer.stop();
+            death();
         }
         turnLock = false;
         if ((headIX == apple.indexX) && (headIY == apple.indexY)){
@@ -474,5 +482,24 @@ public class Window {
         apple.setBackground(new Color(255, 153, 51));
         gamePanel.add(apple);
         return(1);
+    }
+    public void death(){
+        deathTimerSteps = 0;
+        deathTimer = new Timer(50,x -> shrink(x) );
+        deathTimer.start();
+    }
+    public void shrink(ActionEvent e){
+        if (deathTimerSteps != snake.size()){
+            deathTimerSteps++;
+        }
+        for(int i=0; i < deathTimerSteps ;i++){
+            if (snake.get(i).borderThickness != 10){
+                snake.get(i).borderThickness++;
+                snake.get(i).setBorder(BorderFactory.createLineBorder(new Color(15, 20, 20), snake.get(i).borderThickness));
+            }
+        }
+        if (snake.get(snake.size()-1).borderThickness == 10){
+            deathTimer.stop();
+        }
     }
 }
